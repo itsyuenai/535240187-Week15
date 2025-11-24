@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import styles from "./page.module.css"; // Import CSS yang baru dibuat
+import styles from "./page.module.css";
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const todos = await prisma.todo.findMany({
