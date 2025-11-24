@@ -1,6 +1,9 @@
+// app/page.tsx
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import styles from "./page.module.css";
+import TodoItem from "./TodoItem"; // Import komponen Client
+
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
@@ -8,6 +11,7 @@ export default async function Home() {
     orderBy: { createdAt: 'desc' }
   });
 
+  // --- CREATE ---
   async function addTodo(formData: FormData) {
     "use server";
     const title = formData.get("title") as string;
@@ -16,6 +20,22 @@ export default async function Home() {
     revalidatePath("/");
   }
 
+  // --- UPDATE (Fitur Baru) ---
+  async function updateTodo(formData: FormData) {
+    "use server";
+    const id = formData.get("id") as string;
+    const title = formData.get("title") as string;
+
+    if (title) {
+      await prisma.todo.update({
+        where: { id: parseInt(id) },
+        data: { title }
+      });
+      revalidatePath("/");
+    }
+  }
+
+  // --- DELETE ---
   async function deleteTodo(formData: FormData) {
     "use server";
     const id = formData.get("id") as string;
@@ -46,14 +66,13 @@ export default async function Home() {
         {/* Daftar List */}
         <ul className={styles.list}>
           {todos.map((todo) => (
-            <li key={todo.id} className={styles.listItem}>
-              <span className={styles.todoText}>{todo.title}</span>
-              <form action={deleteTodo}>
-                <input type="hidden" name="id" value={todo.id} />
-                <button type="submit" className={styles.deleteButton}>
-                  Hapus
-                </button>
-              </form>
+            // Panggil Component TodoItem, oper function update & delete ke sana
+            <li key={todo.id}>
+              <TodoItem
+                todo={todo}
+                deleteTodo={deleteTodo}
+                updateTodo={updateTodo}
+              />
             </li>
           ))}
 
