@@ -6,7 +6,7 @@ declare global {
 }
 
 // Workaround to find the db file in production
-const filePath = path.join(process.cwd(), 'prisma/local.db');
+const filePath = path.join(process.cwd(), 'prisma/dev.db');
 const config = {
     datasources: {
         db: {
