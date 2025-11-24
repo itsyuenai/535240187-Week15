@@ -33,4 +33,27 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
+### Setup Database untuk Production
+
+Aplikasi ini menggunakan PostgreSQL untuk production (karena SQLite tidak bekerja di Vercel serverless).
+
+**Langkah-langkah:**
+
+1. **Setup Database PostgreSQL:**
+   - Gunakan [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) (recommended)
+   - Atau gunakan [Supabase](https://supabase.com), [Neon](https://neon.tech), atau provider PostgreSQL lainnya
+
+2. **Set Environment Variable di Vercel:**
+   - Buka project settings di Vercel
+   - Masuk ke "Environment Variables"
+   - Tambahkan `DATABASE_URL` dengan connection string PostgreSQL Anda
+   - Format: `postgresql://user:password@host:port/database?sslmode=require`
+
+3. **Deploy:**
+   - Push code ke GitHub/GitLab
+   - Vercel akan otomatis build dan run migrations
+   - Build script sudah include `prisma migrate deploy`
+
+**Catatan:** Untuk development lokal, Anda masih bisa menggunakan SQLite dengan mengubah `DATABASE_URL` di file `.env.local` menjadi `file:./dev.db`
+
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
