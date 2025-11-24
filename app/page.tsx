@@ -1,66 +1,66 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import styles from "./page.module.css"; // Import CSS yang baru dibuat
 
-export default function Home() {
+export default async function Home() {
+  const todos = await prisma.todo.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
+
+  async function addTodo(formData: FormData) {
+    "use server";
+    const title = formData.get("title") as string;
+    if (!title) return;
+    await prisma.todo.create({ data: { title } });
+    revalidatePath("/");
+  }
+
+  async function deleteTodo(formData: FormData) {
+    "use server";
+    const id = formData.get("id") as string;
+    await prisma.todo.delete({ where: { id: parseInt(id) } });
+    revalidatePath("/");
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className={styles.main}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>📝 Tugas Hari Ini</h1>
+
+        {/* Form Input */}
+        <form action={addTodo} className={styles.form}>
+          <input
+            name="title"
+            type="text"
+            placeholder="Tambah tugas baru..."
+            className={styles.input}
+            required
+            autoComplete="off"
+          />
+          <button type="submit" className={styles.addButton}>
+            +
+          </button>
+        </form>
+
+        {/* Daftar List */}
+        <ul className={styles.list}>
+          {todos.map((todo) => (
+            <li key={todo.id} className={styles.listItem}>
+              <span className={styles.todoText}>{todo.title}</span>
+              <form action={deleteTodo}>
+                <input type="hidden" name="id" value={todo.id} />
+                <button type="submit" className={styles.deleteButton}>
+                  Hapus
+                </button>
+              </form>
+            </li>
+          ))}
+
+          {todos.length === 0 && (
+            <p className={styles.emptyState}>Belum ada tugas. Yuk mulai produktif!</p>
+          )}
+        </ul>
+      </div>
+    </main>
   );
 }
